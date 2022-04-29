@@ -1,0 +1,186 @@
+bmsce@bmsce-Precision-T1700:~$ Cassandra/apache-cassandra-3.11.0/bin
+bash: Cassandra/apache-cassandra-3.11.0/bin: Is a directory
+bmsce@bmsce-Precision-T1700:~$ Cassandra/apache-cassandra-3.11.0/bin/
+bash: Cassandra/apache-cassandra-3.11.0/bin/: Is a directory
+bmsce@bmsce-Precision-T1700:~$ cd Cassandra/apache-cassandra-3.11.0/bin/
+bmsce@bmsce-Precision-T1700:~/Cassandra/apache-cassandra-3.11.0/bin$ ./cqlsh
+Connected to Test Cluster at 127.0.0.1:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.4 | CQL spec 3.4.4 | Native protocol v4]
+Use HELP for help.
+cqlsh> create keyspace library with replication = {
+   ... 'class':'SimpleStrategy', 'replication_factor':1
+   ... };
+cqlsh> describe keyspaces
+
+system_schema  system   student             system_traces
+system_auth    library  system_distributed
+
+cqlsh> select * from system.library
+   ... ;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="unconfigured table library"
+cqlsh> help
+
+Documented shell commands:
+===========================
+CAPTURE  CLS          COPY  DESCRIBE  EXPAND  LOGIN   SERIAL  SOURCE   UNICODE
+CLEAR    CONSISTENCY  DESC  EXIT      HELP    PAGING  SHOW    TRACING
+
+CQL help topics:
+================
+AGGREGATES               CREATE_KEYSPACE           DROP_TRIGGER      TEXT     
+ALTER_KEYSPACE           CREATE_MATERIALIZED_VIEW  DROP_TYPE         TIME     
+ALTER_MATERIALIZED_VIEW  CREATE_ROLE               DROP_USER         TIMESTAMP
+ALTER_TABLE              CREATE_TABLE              FUNCTIONS         TRUNCATE 
+ALTER_TYPE               CREATE_TRIGGER            GRANT             TYPES    
+ALTER_USER               CREATE_TYPE               INSERT            UPDATE   
+APPLY                    CREATE_USER               INSERT_JSON       USE      
+ASCII                    DATE                      INT               UUID     
+BATCH                    DELETE                    JSON            
+BEGIN                    DROP_AGGREGATE            KEYWORDS        
+BLOB                     DROP_COLUMNFAMILY         LIST_PERMISSIONS
+BOOLEAN                  DROP_FUNCTION             LIST_ROLES      
+COUNTER                  DROP_INDEX                LIST_USERS      
+CREATE_AGGREGATE         DROP_KEYSPACE             PERMISSIONS     
+CREATE_COLUMNFAMILY      DROP_MATERIALIZED_VIEW    REVOKE          
+CREATE_FUNCTION          DROP_ROLE                 SELECT          
+CREATE_INDEX             DROP_TABLE                SELECT_JSON     
+
+cqlsh> create table library-info(
+   ... stud_id int primary key,
+   ... counter_value counter,
+   ... stud_name text,
+   ... book_nmae text,
+   ... book_id int,
+   ... date_of_issue date);
+SyntaxException: line 1:20 no viable alternative at input '-' (create table [library]-...)
+cqlsh> create table library_info( stud_id int primary key, counter_value counter, stud_name text, book_nmae text, book_id int, date_of_issue date);
+InvalidRequest: Error from server: code=2200 [Invalid query] message="No keyspace has been specified. USE a keyspace, or explicitly specify keyspace.tablename"
+cqlsh> ls
+   ... ;
+SyntaxException: line 1:0 no viable alternative at input 'ls' ([ls]...)
+cqlsh> use library
+   ... ;
+cqlsh:library> 
+cqlsh:library> create table library_info( stud_id int primary key, counter_value counter, stud_name text, book_nmae text, book_id int, date_of_issue date);
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot mix counter and non counter columns in the same table"
+cqlsh:library> create table library_info(stud_id int primary key, counter_value counter, stud_name text, book_name text, book_id int, date_of_issue date);
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot mix counter and non counter columns in the same table"
+cqlsh:library> create table library_info(stud_id int, counter_value counter, stud_name text, book_name text, book_id int, date_of_issue date, primary key(stud_id, counter_value, stud_name, book_name, book_id, date_of_issue));
+InvalidRequest: Error from server: code=2200 [Invalid query] message="counter type is not supported for PRIMARY KEY part counter_value"
+cqlsh:library> create table library_info(stud_id int, counter_value counter, stud_name text, book_name text, book_id int, date_of_issue date, primary key(stud_id, stud_name, book_name, book_id, date_of_issue));
+cqlsh:library> update library_info 
+           ... set counter = counter + 1 where stud_id = 1 and stud_name = "Rajeev" and book_name = "Harry Potter" and book_id = 1 and date_of_issue = "2022-01-02";
+SyntaxException: line 2:69 no viable alternative at input 'and' (...= 1 and stud_name = ["Rajee]v" and...)
+cqlsh:library> describe library_info
+
+CREATE TABLE library.library_info (
+    stud_id int,
+    stud_name text,
+    book_name text,
+    book_id int,
+    date_of_issue date,
+    counter_value counter,
+    PRIMARY KEY (stud_id, stud_name, book_name, book_id, date_of_issue)
+) WITH CLUSTERING ORDER BY (stud_name ASC, book_name ASC, book_id ASC, date_of_issue ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99PERCENTILE';
+
+cqlsh:library> update library_info  set counter = counter + 1 where stud_id = 1 and stud_name = 'Rajeev' and book_name = 'Harry Potter' and book_id = 1 and date_of_issue = '2022-01-02';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Undefined column name counter"
+cqlsh:library> update library_info  set counter_value = counter_value + 1 where stud_id = 1 and stud_name = 'Rajeev' and book_name = 'Harry Potter' and book_id = 1 and date_of_issue = '2022-01-02';
+cqlsh:library> select * from library_info;
+
+ stud_id | stud_name | book_name    | book_id | date_of_issue | counter_value
+---------+-----------+--------------+---------+---------------+---------------
+       1 |    Rajeev | Harry Potter |       1 |    2022-01-02 |             1
+
+(1 rows)
+cqlsh:library> update library_info  set counter_value = counter_value + 1 where stud_id = 2 and stud_name = 'Ramesh' and book_name = 'Wings of Fire' and book_id = 2 and date_of_issue = '2022-01-02';
+cqlsh:library> select * from library_info;
+
+ stud_id | stud_name | book_name     | book_id | date_of_issue | counter_value
+---------+-----------+---------------+---------+---------------+---------------
+       1 |    Rajeev |  Harry Potter |       1 |    2022-01-02 |             1
+       2 |    Ramesh | Wings of Fire |       2 |    2022-01-02 |             1
+
+(2 rows)
+cqlsh:library> update library_info  set counter_value = counter_value + 1 where stud_id = 112 and stud_name = 'Rajesh' and book_name = 'BDA' and book_id = 3 and date_of_issue = '2022-01-02';
+cqlsh:library> select * from library_info;
+
+ stud_id | stud_name | book_name     | book_id | date_of_issue | counter_value
+---------+-----------+---------------+---------+---------------+---------------
+       1 |    Rajeev |  Harry Potter |       1 |    2022-01-02 |             1
+       2 |    Ramesh | Wings of Fire |       2 |    2022-01-02 |             1
+     112 |    Rajesh |           BDA |       3 |    2022-01-02 |             1
+
+(3 rows)
+cqlsh:library> update library_info  set counter_value = counter_value + 1 where stud_id = 112 and stud_name = 'Rajesh' and book_name = 'BDA' and book_id = 3 and date_of_issue = '2022-01-02';
+cqlsh:library> select * from library_info;
+
+ stud_id | stud_name | book_name     | book_id | date_of_issue | counter_value
+---------+-----------+---------------+---------+---------------+---------------
+       1 |    Rajeev |  Harry Potter |       1 |    2022-01-02 |             1
+       2 |    Ramesh | Wings of Fire |       2 |    2022-01-02 |             1
+     112 |    Rajesh |           BDA |       3 |    2022-01-02 |             2
+
+(3 rows)
+cqlsh:library> update library_info  set counter_value = counter_value + 1 where stud_id = 113 and stud_name = 'Ranjith' and book_name = 'rpa' and book_id = 4 and date_of_issue = '2022-01-02';
+cqlsh:library> select * from library_info;
+
+ stud_id | stud_name | book_name     | book_id | date_of_issue | counter_value
+---------+-----------+---------------+---------+---------------+---------------
+     113 |   Ranjith |           rpa |       4 |    2022-01-02 |             1
+       1 |    Rajeev |  Harry Potter |       1 |    2022-01-02 |             1
+       2 |    Ramesh | Wings of Fire |       2 |    2022-01-02 |             1
+     112 |    Rajesh |           BDA |       3 |    2022-01-02 |             2
+
+(4 rows)
+cqlsh:library> select * from library_info where stud_id = 112;
+
+ stud_id | stud_name | book_name | book_id | date_of_issue | counter_value
+---------+-----------+-----------+---------+---------------+---------------
+     112 |    Rajesh |       BDA |       3 |    2022-01-02 |             2
+
+(1 rows)
+cqlsh:library> copy library_info (stud_id, stud_name, book_name, book_id, date_of_issue, counter_value) to '/home/bmsce/Desktop/data.csv';
+Using 11 child processes
+
+Starting copy of library.library_info with columns [stud_id, stud_name, book_name, book_id, date_of_issue, counter_value].
+Processed: 4 rows; Rate:      21 rows/s; Avg. rate:      21 rows/s
+4 rows exported to 1 files in 0.200 seconds.
+cqlsh:library> copy library_info (stud_id, stud_name, book_name, book_id, date_of_issue, counter_value) from '/home/bmsce/Desktop/data1.csv';
+Using 11 child processes
+
+Starting copy of library.library_info with columns [stud_id, stud_name, book_name, book_id, date_of_issue, counter_value].
+Processed: 4 rows; Rate:       7 rows/s; Avg. rate:      11 rows/s
+4 rows imported from 1 files in 0.381 seconds (0 skipped).
+cqlsh:library> select * from library_info;
+
+ stud_id | stud_name | book_name     | book_id | date_of_issue | counter_value
+---------+-----------+---------------+---------+---------------+---------------
+     113 |   Ranjith |           rpa |       4 |    2022-01-02 |             1
+       1 |    Rajeev |  Harry Potter |       1 |    2022-01-02 |             1
+       8 |   Saurabh |            ME |       9 |    2022-01-02 |             2
+       2 |    Ramesh | Wings of Fire |       2 |    2022-01-02 |             1
+     112 |    Rajesh |           BDA |       3 |    2022-01-02 |             2
+       7 | Sampreeth |           CNS |       8 |    2022-01-02 |             1
+       9 |     Sagar |           BDA |      10 |    2022-01-02 |             1
+       3 |    Suresh |          OOMD |       7 |    2022-01-02 |             1
+
+(8 rows)
+cqlsh:library> 
+cqlsh:library> 
+
+
